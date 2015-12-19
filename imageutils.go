@@ -8,12 +8,12 @@ import (
 	_ "image/gif"
 	_ "image/jpeg"
 	"image/png"
-	"io/ioutil"
 	"os"
 	"path"
 
 	"appengine"
 	"appengine/urlfetch"
+	"fmt"
 )
 
 // logoFilename should match the name of an image file within the "logos" subdirectory
@@ -35,8 +35,9 @@ func fetchOriginalImage(ctx appengine.Context, imgUrl string) (image.Image, erro
 	client := urlfetch.Client(ctx)
 	if response, err := client.Get(imgUrl); err == nil {
 		defer response.Body.Close()
-		// Download image as stream of bytes
-		if imgBytes, err := ioutil.ReadAll(response.Body); err == nil {
+		// Download image as stream of bytes, failing if the image size exceeds 300 KB
+		imgBytes := make([]byte, 300000)
+		if numBytesRead, err := response.Body.Read(imgBytes); err == nil && numBytesRead < 300000 {
 			// Decode the bytes into a image data type
 			if img, imgConfig, err := bytesToImage(imgBytes); err == nil {
 				// Verify that the dimensions of the image are large enough
@@ -49,6 +50,10 @@ func fetchOriginalImage(ctx appengine.Context, imgUrl string) (image.Image, erro
 			} else {
 				return nil, err
 			}
+		} else if numBytesRead >= 300000 {
+			message := fmt.Sprintf("Could not download [%s] because it exceeds the maximum size\n", imgUrl)
+			ctx.Errorf(message)
+			return nil, errors.New(message)
 		} else {
 			return nil, err
 		}
