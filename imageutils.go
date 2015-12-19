@@ -96,4 +96,3 @@ func bytesToImage(imageBytes []byte) (image.Image, image.Config, error) {
 	}
 	return img, imageConfig, nil
 }
-
