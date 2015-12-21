@@ -1,4 +1,4 @@
-application: logofy
+application: logofy-web
 version: 1
 runtime: go
 api_version: go1
