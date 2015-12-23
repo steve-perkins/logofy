@@ -10,11 +10,11 @@ import (
 
 func init() {
 	http.Handle("/", http.FileServer(http.Dir("static")))
-	http.HandleFunc("/brazzers", brazzersHandler)
+	http.HandleFunc("/logo", defaultHandler)
 }
 
-func brazzersHandler(w http.ResponseWriter, r *http.Request) {
-	abstractHandler(w, r, "brazzers.png")
+func defaultHandler(w http.ResponseWriter, r *http.Request) {
+	abstractHandler(w, r, "default.png")
 }
 
 func abstractHandler(w http.ResponseWriter, r *http.Request, logoFilename string) {
