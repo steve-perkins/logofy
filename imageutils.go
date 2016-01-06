@@ -16,6 +16,8 @@ import (
 	"fmt"
 )
 
+const MAX_IMAGE_BYTES = 1000000
+
 // logoFilename should match the name of an image file within the "logos" subdirectory
 func fetchLogoImage(logoFilename string) (image.Image, error) {
 	if file, err := os.Open(path.Join("logos", logoFilename)); err == nil {
@@ -35,9 +37,9 @@ func fetchOriginalImage(ctx appengine.Context, imgUrl string) (image.Image, erro
 	client := urlfetch.Client(ctx)
 	if response, err := client.Get(imgUrl); err == nil {
 		defer response.Body.Close()
-		// Download image as stream of bytes, failing if the image size exceeds 300 KB
-		imgBytes := make([]byte, 300000)
-		if numBytesRead, err := response.Body.Read(imgBytes); err == nil && numBytesRead < 300000 {
+		// Download image as stream of bytes, failing if the image size exceeds the maximum size
+		imgBytes := make([]byte, MAX_IMAGE_BYTES)
+		if numBytesRead, err := response.Body.Read(imgBytes); err == nil && numBytesRead < MAX_IMAGE_BYTES {
 			// Decode the bytes into a image data type
 			if img, imgConfig, err := bytesToImage(imgBytes); err == nil {
 				// Verify that the dimensions of the image are large enough
@@ -50,7 +52,7 @@ func fetchOriginalImage(ctx appengine.Context, imgUrl string) (image.Image, erro
 			} else {
 				return nil, err
 			}
-		} else if numBytesRead >= 300000 {
+		} else if numBytesRead >= MAX_IMAGE_BYTES {
 			message := fmt.Sprintf("Could not download [%s] because it exceeds the maximum size\n", imgUrl)
 			ctx.Errorf(message)
 			return nil, errors.New(message)
