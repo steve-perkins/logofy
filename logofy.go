@@ -1,20 +1,48 @@
 package logofy
 
 import (
-	"fmt"
-	"net/http"
-
 	"appengine"
 	"appengine/memcache"
+	"fmt"
+	"math/rand"
+	"net/http"
+	"net/url"
 )
 
 func init() {
 	http.Handle("/", http.FileServer(http.Dir("static")))
 	http.HandleFunc("/logo", defaultHandler)
+	http.HandleFunc("/slack", slackHandler)
 }
 
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
 	abstractHandler(w, r, "default.png")
+}
+
+func slackHandler(w http.ResponseWriter, r *http.Request) {
+	titles := []string{
+		"Another paradigm shift from Logofy",
+		"This game-changer brought to you by Logofy",
+		"Building synergy with Logofy",
+		"Thinking outside the box with Logofy",
+		"Pivoting this image's strategy with Logofy",
+		"Adding business value with Logofy",
+		"Moving the needle with Logofy",
+		"Empowering innovative transformation with Logofy",
+		"Gamifying the tipping point with Logofy",
+		"This market disruption brought to you by Logofy",
+	}
+	randomIndex := rand.Intn(len(titles))
+	jsonString :=
+		`{
+	"response_type" : "in_channel",
+	"attachments" : [{
+		"title" : "` + titles[randomIndex] + `",
+		"image_url" : "http://logofy-web.appspot.com/logo?img=` + url.QueryEscape(r.URL.Query().Get("text")) + `"
+	}]
+}`
+	w.Header().Set("Content-Type", "application/json")
+	fmt.Fprint(w, jsonString)
 }
 
 func abstractHandler(w http.ResponseWriter, r *http.Request, logoFilename string) {
