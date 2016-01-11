@@ -78,8 +78,11 @@ func abstractHandler(w http.ResponseWriter, r *http.Request, logoFilename string
 		}
 	}
 	// Load the logo image
-	logoImage, err := fetchLogoImage(logoFilename)
-	if logoImageUrl != "" {
+	if(logoImageUrl == ""){
+		logoImageUrl = "brazz"
+	}
+	logoImage, err := fetchLogoImage(logoImageUrl)
+	if err != nil {
 		logoImage, err = fetchImage(ctx, logoImageUrl, TARGET_LOGO_WIDTH)
 	}
 	if err != nil {
