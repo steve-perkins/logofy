@@ -16,13 +16,15 @@ import (
 	"io/ioutil"
 )
 
-const MAX_IMAGE_BYTES = 1000000
+const TARGET_IMAGE_WIDTH uint = 800
+const TARGET_LOGO_WIDTH uint = 400
 
 // logoFilename should match the name of an image file within the "logos" subdirectory
 func fetchLogoImage(logoFilename string) (image.Image, error) {
 	if file, err := os.Open(path.Join("logos", logoFilename)); err == nil {
 		defer file.Close()
 		if img, _, err := image.Decode(file); err == nil { // _ == format
+			img = resize.Resize(TARGET_LOGO_WIDTH, 0, img, resize.Lanczos3)
 			return img, nil
 		} else {
 			return nil, err
@@ -54,10 +56,6 @@ func fetchImage(ctx appengine.Context, imgUrl string, targetWidth uint) (image.I
 	img = resize.Resize(targetWidth, 0, img, resize.Lanczos3)
 	// Success!
 	return img, nil
-}
-
-func resizeImage(img image.Image, targetWidth uint) {
-	resize.Resize(targetWidth, 0, img, resize.NearestNeighbor)
 }
 
 func generateImageWithLogo(originalImage image.Image, logoImage image.Image) image.Image {

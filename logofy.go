@@ -64,7 +64,7 @@ func abstractHandler(w http.ResponseWriter, r *http.Request, logoFilename string
 		// Load the logo image
 		logoImage, err := fetchLogoImage(logoFilename)
 		if logoImageUrl != "" {
-			logoImage, err = fetchImage(ctx, logoImageUrl, 250)
+			logoImage, err = fetchImage(ctx, logoImageUrl, TARGET_LOGO_WIDTH)
 		}
 		if err != nil {
 			message := fmt.Sprintf("Unable to load logo image file: %s\n", err)
@@ -72,7 +72,7 @@ func abstractHandler(w http.ResponseWriter, r *http.Request, logoFilename string
 			fmt.Fprintf(w, message)
 		}
 		// Fetch the source image
-		if originalImage, err := fetchImage(ctx, originalImageUrl, 800); err == nil {
+		if originalImage, err := fetchImage(ctx, originalImageUrl, TARGET_IMAGE_WIDTH); err == nil {
 			// Generate and return an image with logo over the source
 			generatedImage := generateImageWithLogo(originalImage, logoImage)
 			if generatedImageBytes, err := imageToBytes(generatedImage); err == nil {
