@@ -38,7 +38,7 @@ func slackHandler(w http.ResponseWriter, r *http.Request) {
 	randomIndex := rand.Intn(len(titles))
 
 	paramString := strings.SplitAfter(url.QueryEscape(r.URL.Query().Get("text")), " ")
-	originalImage, logoImage := paramString[0], paramString[1]
+	originalImage, logoImage := strings.TrimSpace(paramString[0]), paramString[1]
 	imgUrl := `http://logofy-web.appspot.com/logo?img=` + originalImage + `&logo=` + logoImage
 	jsonString :=
 		`{
