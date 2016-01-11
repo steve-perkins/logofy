@@ -54,6 +54,8 @@ func abstractHandler(w http.ResponseWriter, r *http.Request, logoFilename string
 	// If the requested pic with the requested logo has already been generated, then use the cached version
 	ctx := appengine.NewContext(r)
 	originalImageUrl := r.URL.Query().Get("img")
+	logoImageUrl := r.URL.Query().Get("logo")
+
 	if item, err := memcache.Get(ctx, logoFilename+":"+originalImageUrl); err == nil {
 		ctx.Infof("Retrieved [%s:%s] from memcache\n", logoFilename, originalImageUrl)
 		w.Header().Set("Content-Type", "image/png")
@@ -61,13 +63,16 @@ func abstractHandler(w http.ResponseWriter, r *http.Request, logoFilename string
 	} else {
 		// Load the logo image
 		logoImage, err := fetchLogoImage(logoFilename)
+		if logoImageUrl != "" {
+			logoImage, err = fetchImage(ctx, logoImageUrl, 250)
+		}
 		if err != nil {
 			message := fmt.Sprintf("Unable to load logo image file: %s\n", err)
 			ctx.Errorf(message)
 			fmt.Fprintf(w, message)
 		}
 		// Fetch the source image
-		if originalImage, err := fetchOriginalImage(ctx, originalImageUrl); err == nil {
+		if originalImage, err := fetchImage(ctx, originalImageUrl, 800); err == nil {
 			// Generate and return an image with logo over the source
 			generatedImage := generateImageWithLogo(originalImage, logoImage)
 			if generatedImageBytes, err := imageToBytes(generatedImage); err == nil {
