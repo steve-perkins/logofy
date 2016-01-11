@@ -40,14 +40,14 @@ func slackHandler(w http.ResponseWriter, r *http.Request) {
 	paramStrings := strings.SplitAfter(textParam, " ")
 
 	imgUrl := ""
-	if(paramStrings[0] != nil && paramStrings[1] != nil){
+	if(len(paramStrings) > 1){
 		originalImage, logoImage := strings.TrimSpace(paramStrings[0]), paramStrings[1]
 		imgUrl = `http://logofy-web.appspot.com/logo?img=` + originalImage + `&logo=` + logoImage
 
 		ctx := appengine.NewContext(r)
 		ctx.Infof("originalImage: %s, logoImage: %s\n", originalImage, logoImage)
 	}else{
-		imgUrl = paramStrings
+		imgUrl = textParam
 	}
 
 	jsonString :=
