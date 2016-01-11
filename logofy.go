@@ -39,11 +39,17 @@ func slackHandler(w http.ResponseWriter, r *http.Request) {
 	textParam := r.URL.Query().Get("text")
 	paramStrings := strings.SplitAfter(textParam, " ")
 
-	originalImage, logoImage := strings.TrimSpace(paramStrings[0]), paramStrings[1]
-	ctx := appengine.NewContext(r)
-	ctx.Infof("originalImage: %s, logoImage: %s\n", originalImage, logoImage)
+	imgUrl := ""
+	if(len(paramStrings) > 1){
+		originalImage, logoImage := strings.TrimSpace(paramStrings[0]), paramStrings[1]
+		imgUrl = `http://logofy-web.appspot.com/logo?img=` + originalImage + `&logo=` + logoImage
 
-	imgUrl := `http://logofy-web.appspot.com/logo?img=` + originalImage + `&logo=` + logoImage
+		ctx := appengine.NewContext(r)
+		ctx.Infof("originalImage: %s, logoImage: %s\n", originalImage, logoImage)
+	}else{
+		imgUrl = textParam
+	}
+
 	jsonString :=
 		`{
 	"response_type" : "in_channel",
@@ -72,8 +78,11 @@ func abstractHandler(w http.ResponseWriter, r *http.Request, logoFilename string
 		}
 	}
 	// Load the logo image
-	logoImage, err := fetchLogoImage(logoFilename)
-	if logoImageUrl != "" {
+	if(logoImageUrl == ""){
+		logoImageUrl = "brazz"
+	}
+	logoImage, err := fetchLogoImage(logoImageUrl)
+	if err != nil {
 		logoImage, err = fetchImage(ctx, logoImageUrl, TARGET_LOGO_WIDTH)
 	}
 	if err != nil {
