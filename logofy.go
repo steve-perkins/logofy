@@ -18,7 +18,7 @@ func init() {
 }
 
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
-	abstractHandler(w, r, "default.png")
+	abstractHandler(w, r)
 }
 
 func slackHandler(w http.ResponseWriter, r *http.Request) {
@@ -62,25 +62,25 @@ func slackHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, jsonString)
 }
 
-func abstractHandler(w http.ResponseWriter, r *http.Request, logoFilename string) {
+func abstractHandler(w http.ResponseWriter, r *http.Request) {
 	// If the requested pic with the requested logo has already been generated, then use the cached version
 	ctx := appengine.NewContext(r)
 	originalImageUrl := r.URL.Query().Get("img")
 	logoImageUrl := r.URL.Query().Get("logo")
+	if(logoImageUrl == ""){
+		logoImageUrl = "brazz"
+	}
 
 	if (MEMCACHE_ENABLED) {
-		item, err := memcache.Get(ctx, logoFilename+":"+originalImageUrl)
+		item, err := memcache.Get(ctx, logoImageUrl+":"+originalImageUrl)
 		if err != nil {
-			ctx.Infof("Retrieved [%s:%s] from memcache\n", logoFilename, originalImageUrl)
+			ctx.Infof("Retrieved [%s:%s] from memcache\n", logoImageUrl, originalImageUrl)
 			w.Header().Set("Content-Type", "image/png")
 			w.Write(item.Value)
 			return
 		}
 	}
 	// Load the logo image
-	if(logoImageUrl == ""){
-		logoImageUrl = "brazz"
-	}
 	logoImage, err := fetchLogoImage(logoImageUrl)
 	if err != nil {
 		logoImage, err = fetchImage(ctx, logoImageUrl, TARGET_LOGO_WIDTH)
@@ -111,13 +111,13 @@ func abstractHandler(w http.ResponseWriter, r *http.Request, logoFilename string
 	// Cache the generated image bytes before sending them in the HTTP response
 	if (MEMCACHE_ENABLED) {
 		item := &memcache.Item{
-			Key:   logoFilename + ":" + originalImageUrl,
+			Key:   logoImageUrl + ":" + originalImageUrl,
 			Value: generatedImageBytes,
 		}
 		memcache.Add(ctx, item)
-		ctx.Infof("Caching [%s:%s]\n", logoFilename, originalImageUrl)
+		ctx.Infof("Caching [%s:%s]\n", logoImageUrl, originalImageUrl)
 	}
-	ctx.Infof("Serving up [%s:%s] from memcache\n", logoFilename, originalImageUrl)
+	ctx.Infof("Serving up [%s:%s] from memcache\n", logoImageUrl, originalImageUrl)
 	w.Header().Set("Content-Type", "image/png")
 	w.Write(generatedImageBytes)
 }
