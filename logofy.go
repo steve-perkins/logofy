@@ -96,12 +96,15 @@ func abstractHandler(w http.ResponseWriter, r *http.Request, logoFilename string
 		return
 	}
 	// Cache the generated image bytes before sending them in the HTTP response
-	item := &memcache.Item{
-		Key:   logoFilename + ":" + originalImageUrl,
-		Value: generatedImageBytes,
+	if (MEMCACHE_ENABLED) {
+		item := &memcache.Item{
+			Key:   logoFilename + ":" + originalImageUrl,
+			Value: generatedImageBytes,
+		}
+		memcache.Add(ctx, item)
+		ctx.Infof("Caching [%s:%s]\n", logoFilename, originalImageUrl)
 	}
-	memcache.Add(ctx, item)
-	ctx.Infof("Caching and serving up [%s:%s] from memcache\n", logoFilename, originalImageUrl)
+	ctx.Infof("Serving up [%s:%s] from memcache\n", logoFilename, originalImageUrl)
 	w.Header().Set("Content-Type", "image/png")
 	w.Write(generatedImageBytes)
 }
