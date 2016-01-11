@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
-	"net/url"
  	"strings"
 )
 
@@ -37,8 +36,13 @@ func slackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	randomIndex := rand.Intn(len(titles))
 
-	paramString := strings.SplitAfter(url.QueryEscape(r.URL.Query().Get("text")), " ")
-	originalImage, logoImage := strings.TrimSpace(paramString[0]), paramString[1]
+	textParam := r.URL.Query().Get("text")
+	paramStrings := strings.SplitAfter(textParam, " ")
+
+	originalImage, logoImage := strings.TrimSpace(paramStrings[0]), paramStrings[1]
+	ctx := appengine.NewContext(r)
+	ctx.Infof("originalImage: %s, logoImage: %s\n", originalImage, logoImage)
+
 	imgUrl := `http://logofy-web.appspot.com/logo?img=` + originalImage + `&logo=` + logoImage
 	jsonString :=
 		`{
