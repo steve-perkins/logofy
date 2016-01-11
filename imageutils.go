@@ -32,7 +32,7 @@ func fetchLogoImage(logoFilename string) (image.Image, error) {
 	}
 }
 
-func fetchOriginalImage(ctx appengine.Context, imgUrl string) (image.Image, error) {
+func fetchImage(ctx appengine.Context, imgUrl string) (image.Image, error) {
 	// Open HTTP request to image URL
 	client := urlfetch.Client(ctx)
 	if response, err := client.Get(imgUrl); err == nil {
