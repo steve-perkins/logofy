@@ -51,13 +51,18 @@ func abstractHandler(w http.ResponseWriter, r *http.Request, logoFilename string
 	ctx := appengine.NewContext(r)
 	originalImageUrl := r.URL.Query().Get("img")
 	logoImageUrl := r.URL.Query().Get("logo")
+
+
 	if item, err := memcache.Get(ctx, logoFilename+":"+originalImageUrl); err == nil {
 		ctx.Infof("Retrieved [%s:%s] from memcache\n", logoFilename, originalImageUrl)
 		w.Header().Set("Content-Type", "image/png")
 		w.Write(item.Value)
 	} else {
 		// Load the logo image
-		logoImage, err := fetchImage(ctx,logoImageUrl)
+		logoImage, err := fetchLogoImage(logoFilename)
+		if logoImageUrl != "" {
+			logoImage, err = fetchImage(ctx,logoImageUrl)
+		}
 		if err != nil {
 			message := fmt.Sprintf("Unable to load logo image file: %s\n", err)
 			ctx.Errorf(message)
