@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+ 	"strings"
 )
 
 func init() {
@@ -33,12 +34,16 @@ func slackHandler(w http.ResponseWriter, r *http.Request) {
 		"This market disruption brought to you by Logofy",
 	}
 	randomIndex := rand.Intn(len(titles))
+
+	paramString := strings.SplitAfter(url.QueryEscape(r.URL.Query().Get("text")), ",")
+	originalImage, logoImage := paramString[0], paramString[1]
+	imgUrl := `http://logofy-web.appspot.com/logo?img=` + originalImage + `&logo=` + logoImage
 	jsonString :=
 		`{
 	"response_type" : "in_channel",
 	"attachments" : [{
 		"title" : "` + titles[randomIndex] + `",
-		"image_url" : "http://logofy-web.appspot.com/logo?img=` + url.QueryEscape(r.URL.Query().Get("text")) + `"
+		"image_url" : "` + imgUrl + `"
 	}]
 }`
 	w.Header().Set("Content-Type", "application/json")
