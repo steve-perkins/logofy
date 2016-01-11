@@ -1,0 +1,3 @@
+[submodule "github.com/nfnt/resize"]
+	path = github.com/nfnt/resize
+	url = https://github.com/nfnt/resize

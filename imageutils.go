@@ -2,7 +2,6 @@ package logofy
 
 import (
 	"bytes"
-	"errors"
 	"image"
 	"image/draw"
 	_ "image/gif"
@@ -13,7 +12,8 @@ import (
 
 	"appengine"
 	"appengine/urlfetch"
-	"fmt"
+	"github.com/nfnt/resize"
+	"io/ioutil"
 )
 
 const MAX_IMAGE_BYTES = 1000000
@@ -32,36 +32,32 @@ func fetchLogoImage(logoFilename string) (image.Image, error) {
 	}
 }
 
-func fetchImage(ctx appengine.Context, imgUrl string) (image.Image, error) {
+func fetchImage(ctx appengine.Context, imgUrl string, targetWidth uint) (image.Image, error) {
 	// Open HTTP request to image URL
 	client := urlfetch.Client(ctx)
-	if response, err := client.Get(imgUrl); err == nil {
-		defer response.Body.Close()
-		// Download image as stream of bytes, failing if the image size exceeds the maximum size
-		imgBytes := make([]byte, MAX_IMAGE_BYTES)
-		if numBytesRead, err := response.Body.Read(imgBytes); err == nil && numBytesRead < MAX_IMAGE_BYTES {
-			// Decode the bytes into a image data type
-			if img, imgConfig, err := bytesToImage(imgBytes); err == nil {
-				// Verify that the dimensions of the image are large enough
-				if imgConfig.Height < 200 && imgConfig.Width < 400 {
-					err := errors.New("Images must be at least 500x500 in size")
-					return nil, err
-				}
-				// Success!
-				return img, nil
-			} else {
-				return nil, err
-			}
-		} else if numBytesRead >= MAX_IMAGE_BYTES {
-			message := fmt.Sprintf("Could not download [%s] because it exceeds the maximum size\n", imgUrl)
-			ctx.Errorf(message)
-			return nil, errors.New(message)
-		} else {
-			return nil, err
-		}
-	} else {
+	response, err := client.Get(imgUrl)
+	if err != nil {
 		return nil, err
 	}
+	defer response.Body.Close()
+	// Download image as stream of bytes
+	imgBytes, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+	// Decode the bytes into a image data type
+	img, _, err := bytesToImage(imgBytes)  // imgConfig
+	if err != nil {
+		return nil, err
+	}
+	// Resize the image
+	img = resize.Resize(targetWidth, 0, img, resize.Lanczos3)
+	// Success!
+	return img, nil
+}
+
+func resizeImage(img image.Image, targetWidth uint) {
+	resize.Resize(targetWidth, 0, img, resize.NearestNeighbor)
 }
 
 func generateImageWithLogo(originalImage image.Image, logoImage image.Image) image.Image {
