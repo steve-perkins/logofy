@@ -39,11 +39,17 @@ func slackHandler(w http.ResponseWriter, r *http.Request) {
 	textParam := r.URL.Query().Get("text")
 	paramStrings := strings.SplitAfter(textParam, " ")
 
-	originalImage, logoImage := strings.TrimSpace(paramStrings[0]), paramStrings[1]
-	ctx := appengine.NewContext(r)
-	ctx.Infof("originalImage: %s, logoImage: %s\n", originalImage, logoImage)
+	imgUrl := ""
+	if(paramStrings[0] != nil && paramStrings[1] != nil){
+		originalImage, logoImage := strings.TrimSpace(paramStrings[0]), paramStrings[1]
+		imgUrl = `http://logofy-web.appspot.com/logo?img=` + originalImage + `&logo=` + logoImage
 
-	imgUrl := `http://logofy-web.appspot.com/logo?img=` + originalImage + `&logo=` + logoImage
+		ctx := appengine.NewContext(r)
+		ctx.Infof("originalImage: %s, logoImage: %s\n", originalImage, logoImage)
+	}else{
+		imgUrl = paramStrings
+	}
+
 	jsonString :=
 		`{
 	"response_type" : "in_channel",
