@@ -76,19 +76,6 @@ func abstractHandler(w http.ResponseWriter, r *http.Request, logoFilename string
 	if logoImageUrl != "" {
 		logoImage, err = fetchImage(ctx, logoImageUrl, TARGET_LOGO_WIDTH)
 	}
-	//Let's see if it's in the list
-	switch logoImageUrl{
-	case "brazz":
-		logoImage = "default.png"
-	case "phub":
-		logoImage = "phub.png"
-	case "chat":
-		logoImage = "chatur.png"
-	case "bettercloud":
-		logoImage = "bettercloud.png"
-	default:
-		logoImage = "default.png"
-	}
 	if err != nil {
 		message := fmt.Sprintf("Unable to load logo image file: %s\n", err)
 		ctx.Errorf(message)
