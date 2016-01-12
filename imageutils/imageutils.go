@@ -72,7 +72,7 @@ func GenerateImageWithLogo(originalImage image.Image, logoImage image.Image, pos
 	case "":
 		min = image.Point{
 			X: originalImage.Bounds().Max.X - logoImage.Bounds().Max.X - 10,
-			Y: originalImage.Bounds().Max.Y - logoImage.Bounds().Max.Y + 10,
+			Y: originalImage.Bounds().Max.Y - logoImage.Bounds().Max.Y - 10,
 		}
 		max = image.Point {
 			X: originalImage.Bounds().Max.X - 10,
@@ -81,7 +81,7 @@ func GenerateImageWithLogo(originalImage image.Image, logoImage image.Image, pos
 	case "br":
 		min = image.Point{
 			X: originalImage.Bounds().Max.X - logoImage.Bounds().Max.X - 10,
-			Y: originalImage.Bounds().Max.Y - logoImage.Bounds().Max.Y + 10,
+			Y: originalImage.Bounds().Max.Y - logoImage.Bounds().Max.Y - 10,
 		}
 		max = image.Point {
 			X: originalImage.Bounds().Max.X - 10,
@@ -90,7 +90,7 @@ func GenerateImageWithLogo(originalImage image.Image, logoImage image.Image, pos
 	case "bl":
 		min = image.Point{
 			X: originalImage.Bounds().Min.X - logoImage.Bounds().Min.X + 10,
-			Y: originalImage.Bounds().Max.Y - logoImage.Bounds().Max.Y + 10,
+			Y: originalImage.Bounds().Max.Y - logoImage.Bounds().Max.Y - 10,
 		}
 		max = image.Point{
 			X: originalImage.Bounds().Max.X + 10,
@@ -99,7 +99,7 @@ func GenerateImageWithLogo(originalImage image.Image, logoImage image.Image, pos
 	case "tl":
 		min = image.Point{
 			X: originalImage.Bounds().Min.X - logoImage.Bounds().Min.X + 10,
-			Y: originalImage.Bounds().Min.Y - logoImage.Bounds().Min.Y - 10,
+			Y: originalImage.Bounds().Min.Y - logoImage.Bounds().Min.Y + 10,
 		}
 		max = image.Point{
 			X: originalImage.Bounds().Max.X + 10,
@@ -107,8 +107,8 @@ func GenerateImageWithLogo(originalImage image.Image, logoImage image.Image, pos
 		}
 	case "tr":
 		min = image.Point{
-			X: originalImage.Bounds().Max.X - logoImage.Bounds().Max.X + 10,
-			Y: originalImage.Bounds().Min.Y - logoImage.Bounds().Min.Y - 10,
+			X: originalImage.Bounds().Max.X - logoImage.Bounds().Max.X - 10,
+			Y: originalImage.Bounds().Min.Y - logoImage.Bounds().Min.Y + 10,
 		}
 		max = image.Point{
 			X: originalImage.Bounds().Max.X + 10,
@@ -117,7 +117,7 @@ func GenerateImageWithLogo(originalImage image.Image, logoImage image.Image, pos
 	case "tc":
 		min = image.Point{
 			X: (originalImage.Bounds().Max.X - logoImage.Bounds().Max.X) / 2,
-			Y: originalImage.Bounds().Min.Y - logoImage.Bounds().Min.Y - 10,
+			Y: originalImage.Bounds().Min.Y - logoImage.Bounds().Min.Y + 10,
 		}
 		max = image.Point{
 			X: originalImage.Bounds().Max.X + 10,
@@ -126,7 +126,7 @@ func GenerateImageWithLogo(originalImage image.Image, logoImage image.Image, pos
 	case "bc":
 		min = image.Point{
 			X: (originalImage.Bounds().Max.X - logoImage.Bounds().Max.X) / 2,
-			Y: originalImage.Bounds().Max.Y - logoImage.Bounds().Max.Y + 10,
+			Y: originalImage.Bounds().Max.Y - logoImage.Bounds().Max.Y - 10,
 		}
 		max=  image.Point{
 			X: originalImage.Bounds().Max.X + 10,
