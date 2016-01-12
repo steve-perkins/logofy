@@ -50,6 +50,7 @@ func slackHandler(w http.ResponseWriter, r *http.Request) {
 		ctx.Infof("originalImage: %s, logoImage: %s, pos:%s\n, ", originalImage, logoImage, pos)
 	} else if len(paramStrings) > 1 {
 		originalImage, logoOrPos := strings.TrimSpace(paramStrings[0]), strings.TrimSpace(paramStrings[1])
+		logoOrPos = strings.ToLower(logoOrPos)
 		if(logoOrPos == "tl" || logoOrPos == "tc" || logoOrPos == "tr" || logoOrPos == "bl" || logoOrPos == "bc" || logoOrPos == "br"){
 			imgUrl = `http://logofy-web.appspot.com/logo?img=` + originalImage + `&pos=` + logoOrPos
 			ctx.Infof("originalImage: %s, pos:%s\n, ", originalImage, logoOrPos)
