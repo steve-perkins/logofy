@@ -43,11 +43,13 @@ func slackHandler(w http.ResponseWriter, r *http.Request) {
 	paramStrings := strings.SplitAfter(textParam, " ")
 
 	// TODO: Determine whether "paramStrings[0]" is the URL to an image.  If not, then treat it as a Giphy search string and get an image URL from "giphyutils.FetchGiphyUrl()"
-	giphyImage, err := giphyutils.FetchGiphyUrl(ctx, paramStrings[0])
-	if err != nil {
-		ctx.Errorf("An error was encountered: %s\n", err)
-	} else {
-		ctx.Infof("Fetched URL from Giphy: %s\n", giphyImage)
+	if len(paramStrings) > 0 {
+		giphyImage, err := giphyutils.FetchGiphyUrl(ctx, paramStrings[0])
+		if err != nil {
+			ctx.Errorf("An error was encountered: %s\n", err)
+		} else {
+			ctx.Infof("Giphy returned this image URL: %s\n", giphyImage)
+		}
 	}
 
 	imgUrl := ""
