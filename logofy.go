@@ -119,9 +119,11 @@ func abstractHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, message)
 		return
 	}
+	// Set the logo position
+	pos := r.URL.Query().Get("pos")
 
 	// Generate and return an image with logo over the source
-	generatedImage := imageutils.GenerateImageWithLogo(originalImage, logoImage)
+	generatedImage := imageutils.GenerateImageWithLogo(originalImage, logoImage, pos)
 	generatedImageBytes, err := imageutils.ImageToBytes(generatedImage)
 	if err != nil {
 		message := fmt.Sprintf("An error occured: %s\n", err)

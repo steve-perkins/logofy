@@ -14,6 +14,7 @@ import (
 	"appengine/urlfetch"
 	"github.com/nfnt/resize"
 	"io/ioutil"
+	"strings"
 )
 
 const TARGET_IMAGE_WIDTH uint = 800
@@ -58,25 +59,84 @@ func FetchImage(ctx appengine.Context, imgUrl string, targetWidth uint) (image.I
 	return img, nil
 }
 
-func GenerateImageWithLogo(originalImage image.Image, logoImage image.Image) image.Image {
+
+
+func GenerateImageWithLogo(originalImage image.Image, logoImage image.Image, pos string) image.Image {
 	// Create an editable image from the original
 	newImage := image.NewRGBA(originalImage.Bounds())
 	draw.Draw(newImage, originalImage.Bounds(), originalImage, image.ZP, draw.Over)
 	// Superimpose the logo image in the bottom-right corner of the new editable image
-	logoBounds := image.Rectangle{
-		Min: image.Point{
+	var min, max image.Point
+
+	switch strings.ToLower(pos) {
+	case "":
+		min = image.Point{
 			X: originalImage.Bounds().Max.X - logoImage.Bounds().Max.X - 10,
-			Y: originalImage.Bounds().Max.Y - logoImage.Bounds().Max.Y - 10,
-		},
-		Max: image.Point{
+			Y: originalImage.Bounds().Max.Y - logoImage.Bounds().Max.Y + 10,
+		}
+		max = image.Point {
 			X: originalImage.Bounds().Max.X - 10,
+			Y: originalImage.Bounds().Max.Y + 10,
+		}
+	case "br":
+		min = image.Point{
+			X: originalImage.Bounds().Max.X - logoImage.Bounds().Max.X - 10,
+			Y: originalImage.Bounds().Max.Y - logoImage.Bounds().Max.Y + 10,
+		}
+		max = image.Point {
+			X: originalImage.Bounds().Max.X - 10,
+			Y: originalImage.Bounds().Max.Y + 10,
+		}
+	case "bl":
+		min = image.Point{
+			X: originalImage.Bounds().Min.X - logoImage.Bounds().Min.X + 10,
+			Y: originalImage.Bounds().Max.Y - logoImage.Bounds().Max.Y + 10,
+		}
+		max = image.Point{
+			X: originalImage.Bounds().Max.X + 10,
+			Y: originalImage.Bounds().Max.Y + 10,
+		}
+	case "tl":
+		min = image.Point{
+			X: originalImage.Bounds().Min.X - logoImage.Bounds().Min.X + 10,
+			Y: originalImage.Bounds().Min.Y - logoImage.Bounds().Min.Y - 10,
+		}
+		max = image.Point{
+			X: originalImage.Bounds().Max.X + 10,
 			Y: originalImage.Bounds().Max.Y - 10,
-		},
+		}
+	case "tr":
+		min = image.Point{
+			X: originalImage.Bounds().Max.X - logoImage.Bounds().Max.X + 10,
+			Y: originalImage.Bounds().Min.Y - logoImage.Bounds().Min.Y - 10,
+		}
+		max = image.Point{
+			X: originalImage.Bounds().Max.X + 10,
+			Y: originalImage.Bounds().Max.Y - 10,
+		}
+	case "tc":
+		min = image.Point{
+			X: (originalImage.Bounds().Max.X - logoImage.Bounds().Max.X) / 2,
+			Y: originalImage.Bounds().Min.Y - logoImage.Bounds().Min.Y - 10,
+		}
+		max = image.Point{
+			X: originalImage.Bounds().Max.X + 10,
+			Y: originalImage.Bounds().Max.Y - 10,
+		}
+	case "bc":
+		min = image.Point{
+			X: (originalImage.Bounds().Max.X - logoImage.Bounds().Max.X) / 2,
+			Y: originalImage.Bounds().Max.Y - logoImage.Bounds().Max.Y + 10,
+		}
+		max=  image.Point{
+			X: originalImage.Bounds().Max.X + 10,
+			Y: originalImage.Bounds().Max.Y + 10,
+		}
 	}
+	logoBounds := image.Rectangle{ Min: min, Max: max }
 	draw.Draw(newImage, logoBounds, logoImage, image.ZP, draw.Over)
 	return newImage
 }
-
 func ImageToBytes(img image.Image) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	if err := png.Encode(buf, img); err == nil {
