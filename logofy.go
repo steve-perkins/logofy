@@ -43,17 +43,7 @@ func slackHandler(w http.ResponseWriter, r *http.Request) {
 	textParam := r.URL.Query().Get("text")
 	paramStrings := strings.SplitAfter(textParam, " ")
 
-	// TODO: Determine whether "paramStrings[0]" is the URL to an image.  If not, then treat it as a Giphy search string and get an image URL from "giphyutils.FetchGiphyUrl()"
-	if len(paramStrings) > 0 {
-		giphyImage, err := giphyutils.FetchGiphyUrl(ctx, paramStrings[0])
-		if err != nil {
-			ctx.Errorf("An error was encountered: %s\n", err)
-		} else {
-			ctx.Infof("Giphy returned this image URL: %s\n", giphyImage)
-		}
-	}
-
-	imgUrl := ""
+	var imgUrl string
 	if len(paramStrings) > 2 {
 		originalImage, logoImage, pos := strings.TrimSpace(paramStrings[0]), strings.TrimSpace(paramStrings[1]), strings.TrimSpace(paramStrings[2])
 		imgUrl = `http://logofy-web.appspot.com/logo?img=` + originalImage + `&logo=` + logoImage + `&pos=` + pos
@@ -68,7 +58,7 @@ func slackHandler(w http.ResponseWriter, r *http.Request) {
 			ctx.Infof("originalImage: %s, logo:%s\n, ", originalImage, logoOrPos)
 		}
 	} else {
-		imgUrl = url.QueryEscape(textParam)
+		imgUrl = `http://logofy-web.appspot.com/logo?img=` + url.QueryEscape(textParam)
 	}
 
 	jsonString :=
@@ -87,6 +77,7 @@ func abstractHandler(w http.ResponseWriter, r *http.Request) {
 	// If the requested pic with the requested logo has already been generated, then use the cached version
 	ctx := appengine.NewContext(r)
 	originalImageUrl := r.URL.Query().Get("img")
+
 	logoImageUrl := r.URL.Query().Get("logo")
 	if logoImageUrl == "" {
 		logoImageUrl = "brazz"
@@ -112,7 +103,15 @@ func abstractHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, message)
 		return
 	}
-	// Fetch the source image
+
+	giphyImageUrl, err := giphyutils.FetchGiphyUrl(ctx, originalImageUrl)
+	if err != nil {
+		ctx.Errorf("An error was encountered: %s\n", err)
+	} else {
+		ctx.Infof("Giphy returned this image URL: %s\n", giphyImageUrl)
+		originalImageUrl = giphyImageUrl
+	}
+
 	originalImage, err := imageutils.FetchImage(ctx, originalImageUrl, imageutils.TARGET_IMAGE_WIDTH)
 	if err != nil {
 		message := fmt.Sprintf("An error occurred: %s\n", err)
@@ -120,6 +119,7 @@ func abstractHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, message)
 		return
 	}
+
 	// Set the logo position
 	pos := r.URL.Query().Get("pos")
 
