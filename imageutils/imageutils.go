@@ -1,4 +1,4 @@
-package logofy
+package imageutils
 
 import (
 	"bytes"
@@ -20,7 +20,7 @@ const TARGET_IMAGE_WIDTH uint = 800
 const TARGET_LOGO_WIDTH uint = 400
 
 // logoFilename should match the name of an image file within the "logos" subdirectory
-func fetchLogoImage(logoFilename string) (image.Image, error) {
+func FetchLogoImage(logoFilename string) (image.Image, error) {
 	if file, err := os.Open(path.Join("logos", logoFilename)); err == nil {
 		defer file.Close()
 		if img, _, err := image.Decode(file); err == nil { // _ == format
@@ -34,7 +34,7 @@ func fetchLogoImage(logoFilename string) (image.Image, error) {
 	}
 }
 
-func fetchImage(ctx appengine.Context, imgUrl string, targetWidth uint) (image.Image, error) {
+func FetchImage(ctx appengine.Context, imgUrl string, targetWidth uint) (image.Image, error) {
 	// Open HTTP request to image URL
 	client := urlfetch.Client(ctx)
 	response, err := client.Get(imgUrl)
@@ -48,7 +48,7 @@ func fetchImage(ctx appengine.Context, imgUrl string, targetWidth uint) (image.I
 		return nil, err
 	}
 	// Decode the bytes into a image data type
-	img, _, err := bytesToImage(imgBytes)  // imgConfig
+	img, _, err := bytesToImage(imgBytes) // imgConfig
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func fetchImage(ctx appengine.Context, imgUrl string, targetWidth uint) (image.I
 	return img, nil
 }
 
-func generateImageWithLogo(originalImage image.Image, logoImage image.Image) image.Image {
+func GenerateImageWithLogo(originalImage image.Image, logoImage image.Image) image.Image {
 	// Create an editable image from the original
 	newImage := image.NewRGBA(originalImage.Bounds())
 	draw.Draw(newImage, originalImage.Bounds(), originalImage, image.ZP, draw.Over)
@@ -77,7 +77,7 @@ func generateImageWithLogo(originalImage image.Image, logoImage image.Image) ima
 	return newImage
 }
 
-func imageToBytes(img image.Image) ([]byte, error) {
+func ImageToBytes(img image.Image) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	if err := png.Encode(buf, img); err == nil {
 		return buf.Bytes(), nil

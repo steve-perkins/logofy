@@ -4,9 +4,11 @@ import (
 	"appengine"
 	"appengine/memcache"
 	"fmt"
+	"giphyutils"
+	"imageutils"
 	"math/rand"
 	"net/http"
- 	"strings"
+	"strings"
 )
 
 const MEMCACHE_ENABLED = false
@@ -18,6 +20,17 @@ func init() {
 }
 
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
+
+	// Testing out Giphy integration
+	// TODO: Move this elsewhere and make it more real
+	ctx := appengine.NewContext(r)
+	img, err := giphyutils.FetchFromGify(ctx, "test")
+	if err != nil {
+		ctx.Errorf("An error occurred: %v\n", err)
+	} else {
+		ctx.Infof("Downloaded Giphy image with bounds: %s\n", img.Bounds().String())
+	}
+
 	abstractHandler(w, r)
 }
 
@@ -40,13 +53,13 @@ func slackHandler(w http.ResponseWriter, r *http.Request) {
 	paramStrings := strings.SplitAfter(textParam, " ")
 
 	imgUrl := ""
-	if(len(paramStrings) > 1){
+	if len(paramStrings) > 1 {
 		originalImage, logoImage := strings.TrimSpace(paramStrings[0]), paramStrings[1]
 		imgUrl = `http://logofy-web.appspot.com/logo?img=` + originalImage + `&logo=` + logoImage
 
 		ctx := appengine.NewContext(r)
 		ctx.Infof("originalImage: %s, logoImage: %s\n", originalImage, logoImage)
-	}else{
+	} else {
 		imgUrl = textParam
 	}
 
@@ -67,11 +80,11 @@ func abstractHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := appengine.NewContext(r)
 	originalImageUrl := r.URL.Query().Get("img")
 	logoImageUrl := r.URL.Query().Get("logo")
-	if(logoImageUrl == ""){
+	if logoImageUrl == "" {
 		logoImageUrl = "brazz"
 	}
 
-	if (MEMCACHE_ENABLED) {
+	if MEMCACHE_ENABLED {
 		item, err := memcache.Get(ctx, logoImageUrl+":"+originalImageUrl)
 		if err != nil {
 			ctx.Infof("Retrieved [%s:%s] from memcache\n", logoImageUrl, originalImageUrl)
@@ -81,9 +94,9 @@ func abstractHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	// Load the logo image
-	logoImage, err := fetchLogoImage(logoImageUrl)
+	logoImage, err := imageutils.FetchLogoImage(logoImageUrl)
 	if err != nil {
-		logoImage, err = fetchImage(ctx, logoImageUrl, TARGET_LOGO_WIDTH)
+		logoImage, err = imageutils.FetchImage(ctx, logoImageUrl, imageutils.TARGET_LOGO_WIDTH)
 	}
 	if err != nil {
 		message := fmt.Sprintf("Unable to load logo image file: %s\n", err)
@@ -92,7 +105,7 @@ func abstractHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Fetch the source image
-	originalImage, err := fetchImage(ctx, originalImageUrl, TARGET_IMAGE_WIDTH)
+	originalImage, err := imageutils.FetchImage(ctx, originalImageUrl, imageutils.TARGET_IMAGE_WIDTH)
 	if err != nil {
 		message := fmt.Sprintf("An error occurred: %s\n", err)
 		ctx.Errorf(message)
@@ -100,8 +113,8 @@ func abstractHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Generate and return an image with logo over the source
-	generatedImage := generateImageWithLogo(originalImage, logoImage)
-	generatedImageBytes, err := imageToBytes(generatedImage)
+	generatedImage := imageutils.GenerateImageWithLogo(originalImage, logoImage)
+	generatedImageBytes, err := imageutils.ImageToBytes(generatedImage)
 	if err != nil {
 		message := fmt.Sprintf("An error occured: %s\n", err)
 		ctx.Errorf(message)
@@ -109,7 +122,7 @@ func abstractHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Cache the generated image bytes before sending them in the HTTP response
-	if (MEMCACHE_ENABLED) {
+	if MEMCACHE_ENABLED {
 		item := &memcache.Item{
 			Key:   logoImageUrl + ":" + originalImageUrl,
 			Value: generatedImageBytes,
@@ -117,7 +130,7 @@ func abstractHandler(w http.ResponseWriter, r *http.Request) {
 		memcache.Add(ctx, item)
 		ctx.Infof("Caching [%s:%s]\n", logoImageUrl, originalImageUrl)
 	}
-	ctx.Infof("Serving up [%s:%s] from memcache\n", logoImageUrl, originalImageUrl)
+	ctx.Infof("Serving up [%s:%s]\n", logoImageUrl, originalImageUrl)
 	w.Header().Set("Content-Type", "image/png")
 	w.Write(generatedImageBytes)
 }
