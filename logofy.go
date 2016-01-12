@@ -20,21 +20,11 @@ func init() {
 }
 
 func defaultHandler(w http.ResponseWriter, r *http.Request) {
-
-	// Testing out Giphy integration
-	// TODO: Move this elsewhere and make it more real
-	ctx := appengine.NewContext(r)
-	img, err := giphyutils.FetchFromGify(ctx, "test")
-	if err != nil {
-		ctx.Errorf("An error occurred: %v\n", err)
-	} else {
-		ctx.Infof("Downloaded Giphy image with bounds: %s\n", img.Bounds().String())
-	}
-
 	abstractHandler(w, r)
 }
 
 func slackHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := appengine.NewContext(r)
 	titles := []string{
 		"Another paradigm shift from Logofy",
 		"This game-changer brought to you by Logofy",
@@ -52,12 +42,18 @@ func slackHandler(w http.ResponseWriter, r *http.Request) {
 	textParam := r.URL.Query().Get("text")
 	paramStrings := strings.SplitAfter(textParam, " ")
 
+	// TODO: Determine whether "paramStrings[0]" is the URL to an image.  If not, then treat it as a Giphy search string and get an image URL from "giphyutils.FetchGiphyUrl()"
+	giphyImage, err := giphyutils.FetchGiphyUrl(ctx, paramStrings[0])
+	if err != nil {
+		ctx.Errorf("An error was encountered: %s\n", err)
+	} else {
+		ctx.Infof("Fetched URL from Giphy: %s\n", giphyImage)
+	}
+
 	imgUrl := ""
 	if len(paramStrings) > 1 {
 		originalImage, logoImage := strings.TrimSpace(paramStrings[0]), paramStrings[1]
 		imgUrl = `http://logofy-web.appspot.com/logo?img=` + originalImage + `&logo=` + logoImage
-
-		ctx := appengine.NewContext(r)
 		ctx.Infof("originalImage: %s, logoImage: %s\n", originalImage, logoImage)
 	} else {
 		imgUrl = textParam
