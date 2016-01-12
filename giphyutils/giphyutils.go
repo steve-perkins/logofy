@@ -32,7 +32,7 @@ type GiphyOriginalStill struct {
 func FetchGiphyUrl(ctx appengine.Context, searchString string) (string, error) {
 	client := urlfetch.Client(ctx)
 	gifyUrl := fmt.Sprintf("http://api.giphy.com/v1/gifs/search?q=%s&limit=1&api_key=dc6zaTOxFJmzC", url.QueryEscape(searchString))
-	ctx.Infof("Hitting Gify URL: %s\n", gifyUrl)
+	ctx.Infof("Querying Gify URL: %s\n", gifyUrl)
 	response, err := client.Get(gifyUrl)
 	if err != nil {
 		ctx.Errorf("An error occurred: %s\n", err)
