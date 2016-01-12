@@ -119,6 +119,7 @@ func abstractHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, message)
 		return
 	}
+
 	// Set the logo position
 	pos := r.URL.Query().Get("pos")
 
