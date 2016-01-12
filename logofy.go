@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net/http"
 	"strings"
+	"net/url"
 )
 
 const MEMCACHE_ENABLED = false
@@ -53,12 +54,21 @@ func slackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	imgUrl := ""
-	if len(paramStrings) > 1 {
-		originalImage, logoImage := strings.TrimSpace(paramStrings[0]), paramStrings[1]
-		imgUrl = `http://logofy-web.appspot.com/logo?img=` + originalImage + `&logo=` + logoImage
-		ctx.Infof("originalImage: %s, logoImage: %s\n", originalImage, logoImage)
+	if len(paramStrings) > 2 {
+		originalImage, logoImage, pos := strings.TrimSpace(paramStrings[0]), strings.TrimSpace(paramStrings[1]), strings.TrimSpace(paramStrings[2])
+		imgUrl = `http://logofy-web.appspot.com/logo?img=` + originalImage + `&logo=` + logoImage + `&pos=` + pos
+		ctx.Infof("originalImage: %s, logoImage: %s, pos:%s\n, ", originalImage, logoImage, pos)
+	} else if len(paramStrings) > 1 {
+		originalImage, logoOrPos := strings.TrimSpace(paramStrings[0]), strings.TrimSpace(paramStrings[1])
+		if(logoOrPos == "tl" || logoOrPos == "tc" || logoOrPos == "tr" || logoOrPos == "bl" || logoOrPos == "bc" || logoOrPos == "br"){
+			imgUrl = `http://logofy-web.appspot.com/logo?img=` + originalImage + `&pos=` + logoOrPos
+			ctx.Infof("originalImage: %s, pos:%s\n, ", originalImage, logoOrPos)
+		}else{
+			imgUrl = `http://logofy-web.appspot.com/logo?img=` + originalImage + `&logo=` + logoOrPos
+			ctx.Infof("originalImage: %s, logo:%s\n, ", originalImage, logoOrPos)
+		}
 	} else {
-		imgUrl = textParam
+		imgUrl = url.QueryEscape(textParam)
 	}
 
 	jsonString :=
