@@ -128,7 +128,7 @@ func abstractHandler(w http.ResponseWriter, r *http.Request) {
 	generatedImage := imageutils.GenerateImageWithLogo(originalImage, logoImage, pos)
 	generatedImageBytes, err := imageutils.ImageToBytes(generatedImage)
 	if err != nil {
-		message := fmt.Sprintf("An error occured: %s\n", err)
+		message := fmt.Sprintf("An error occurred: %s\n", err)
 		ctx.Errorf(message)
 		fmt.Fprintf(w, message)
 		return
